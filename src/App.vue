@@ -1,6 +1,5 @@
 <template>
   <div id="app">
-    <Navbar />
     <div class="main-layout">
       <Sidebar />
       <div class="content">
@@ -21,22 +20,28 @@ export default {
   },
 };
 </script>
-
 <style>
 #app {
   display: flex;
   flex-direction: column;
   height: 100vh;
+  width: 100vw;
+  overflow: hidden;
 }
 
 .main-layout {
   display: flex;
   flex: 1;
+  width: 100%;
+  height: 100%;
 }
 
 .content {
   flex: 1;
   padding: 20px;
   margin-left: 250px;
+  width: calc(100% - 250px);
+  height: 100%;
+  overflow-y: auto;
 }
 </style>

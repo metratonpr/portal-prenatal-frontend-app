@@ -1,25 +1,39 @@
 <template>
-    <div class="form-container">
-        <h2>Cadastrar Exame</h2>
-        <form @submit.prevent="submitForm">
-            <label for="gestanteId">Gestante</label>
-            <select v-model="exame.gestanteId" required>
-                <option v-for="gestante in gestantes" :key="gestante.id" :value="gestante.id">
-                    {{ gestante.nome }}
-                </option>
-            </select>
+    <div class="container mt-4">
+        <h2 class="mb-3">{{ isEditing ? "Editar Exame" : "Cadastrar Exame" }}</h2>
+        <div class="card">
+            <div class="card-body">
+                <form @submit.prevent="submitForm">
+                    <div class="mb-3">
+                        <label class="form-label">Gestante</label>
+                        <select class="form-select" v-model="exame.gestanteId" required>
+                            <option v-for="gestante in gestantes" :key="gestante.id" :value="gestante.id">
+                                {{ gestante.nome }}
+                            </option>
+                        </select>
+                    </div>
 
-            <label for="tipo">Tipo de Exame</label>
-            <input v-model="exame.tipo" type="text" required />
+                    <div class="mb-3">
+                        <label class="form-label">Tipo de Exame</label>
+                        <input class="form-control" v-model="exame.tipo" type="text" required />
+                    </div>
 
-            <label for="dataRealizacao">Data de Realização</label>
-            <input v-model="exame.dataRealizacao" type="date" required />
+                    <div class="mb-3">
+                        <label class="form-label">Data de Realização</label>
+                        <input class="form-control" v-model="exame.dataRealizacao" type="date" required />
+                    </div>
 
-            <label for="resultado">Resultado</label>
-            <textarea v-model="exame.resultado"></textarea>
+                    <div class="mb-3">
+                        <label class="form-label">Resultado</label>
+                        <textarea class="form-control" v-model="exame.resultado" rows="3"></textarea>
+                    </div>
 
-            <button type="submit">Salvar</button>
-        </form>
+                    <button type="submit" class="btn btn-primary w-100">
+                        {{ isEditing ? "Atualizar" : "Salvar" }}
+                    </button>
+                </form>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -36,64 +50,49 @@ export default {
                 dataRealizacao: '',
                 resultado: ''
             },
-            gestantes: []
+            gestantes: [],
+            isEditing: false
         };
     },
     async created() {
-        this.fetchGestantes();
+        await this.fetchGestantes();
+        const id = this.$route.params.id;
+        if (id) {
+            this.isEditing = true;
+            await this.fetchExame(id);
+        }
     },
     methods: {
         async fetchGestantes() {
-            const response = await gestanteService.getAll();
-            this.gestantes = response.data;
+            try {
+                const response = await gestanteService.getAll();
+                this.gestantes = response.data;
+            } catch (error) {
+                console.error('Erro ao buscar gestantes:', error);
+            }
+        },
+        async fetchExame(id) {
+            try {
+                const response = await exameService.getById(id);
+                this.exame = response.data;
+            } catch (error) {
+                console.error('Erro ao buscar exame:', error);
+            }
         },
         async submitForm() {
-            await exameService.create(this.exame);
-            alert('Exame cadastrado com sucesso!');
-            this.$router.push('/exames');
+            try {
+                if (this.isEditing) {
+                    await exameService.update(this.$route.params.id, this.exame);
+                    alert('Exame atualizado com sucesso!');
+                } else {
+                    await exameService.create(this.exame);
+                    alert('Exame cadastrado com sucesso!');
+                }
+                this.$router.push('/exames');
+            } catch (error) {
+                console.error('Erro ao salvar exame:', error);
+            }
         }
     }
 };
 </script>
-
-<style scoped>
-.form-container {
-    max-width: 500px;
-    margin: auto;
-    padding: 20px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    background-color: #f9f9f9;
-}
-
-label {
-    display: block;
-    margin-top: 10px;
-    font-weight: bold;
-}
-
-input,
-select,
-textarea {
-    width: 100%;
-    padding: 8px;
-    margin-top: 5px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-}
-
-button {
-    margin-top: 15px;
-    padding: 10px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
-}
-
-button:hover {
-    background-color: #0056b3;
-}
-</style>

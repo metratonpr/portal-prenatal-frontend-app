@@ -1,9 +1,11 @@
 <template>
-    <div class="list-container">
-        <h2>Lista de Prescrições</h2>
-        <button @click="$router.push('/prescricoes/novo')">+ Nova Prescrição</button>
-        <table>
-            <thead>
+    <div class="container mt-4">
+        <h2 class="mb-3">Lista de Prescrições</h2>
+        <button class="btn btn-primary mb-3" @click="$router.push('/prescricoes/novo')">
+            <i class="bi bi-plus"></i> Nova Prescrição
+        </button>
+        <table class="table table-bordered table-striped">
+            <thead class="table-primary">
                 <tr>
                     <th>Gestante</th>
                     <th>Medicamento</th>
@@ -14,13 +16,17 @@
             </thead>
             <tbody>
                 <tr v-for="prescricao in prescricoes" :key="prescricao.id">
-                    <td>{{ prescricao.gestanteNome }}</td>
+                    <td>{{ prescricao.Gestante.nome }}</td>
                     <td>{{ prescricao.medicamento }}</td>
                     <td>{{ prescricao.dosagem }}</td>
                     <td>{{ prescricao.instrucoes }}</td>
                     <td>
-                        <button @click="editarPrescricao(prescricao.id)">✏️ Editar</button>
-                        <button @click="excluirPrescricao(prescricao.id)" class="delete">🗑 Excluir</button>
+                        <button class="btn btn-info btn-sm me-2 text-white" @click="editarPrescricao(prescricao.id)">
+                            <i class="bi bi-pencil"></i> Editar
+                        </button>
+                        <button class="btn btn-danger btn-sm me-2 text-white" @click="excluirPrescricao(prescricao.id)">
+                            <i class="bi bi-trash"></i> Excluir
+                        </button>
                     </td>
                 </tr>
             </tbody>
@@ -42,65 +48,26 @@ export default {
     },
     methods: {
         async fetchPrescricoes() {
-            const response = await prescricaoService.getAll();
-            this.prescricoes = response.data;
+            try {
+                const response = await prescricaoService.getAll();
+                this.prescricoes = response.data;
+            } catch (error) {
+                console.error('Erro ao buscar prescrições:', error);
+            }
         },
         editarPrescricao(id) {
             this.$router.push(`/prescricoes/${id}/editar`);
         },
         async excluirPrescricao(id) {
             if (confirm('Tem certeza que deseja excluir esta prescrição?')) {
-                await prescricaoService.delete(id);
-                this.fetchPrescricoes();
+                try {
+                    await prescricaoService.delete(id);
+                    this.fetchPrescricoes();
+                } catch (error) {
+                    console.error('Erro ao excluir prescrição:', error);
+                }
             }
         }
     }
 };
 </script>
-
-<style scoped>
-.list-container {
-    max-width: 800px;
-    margin: auto;
-    padding: 20px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    background-color: #f9f9f9;
-}
-
-button {
-    margin: 5px;
-    padding: 8px 12px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 14px;
-}
-
-button.delete {
-    background-color: #dc3545;
-    color: white;
-}
-
-button:hover {
-    opacity: 0.8;
-}
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
-}
-
-thead {
-    background-color: #007bff;
-    color: white;
-}
-
-th,
-td {
-    padding: 10px;
-    border: 1px solid #ccc;
-    text-align: left;
-}
-</style>

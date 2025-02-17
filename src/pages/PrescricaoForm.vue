@@ -1,55 +1,106 @@
 <template>
-    <div class="home-container">
-        <h1>Bem-vindo ao Portal de Atendimento à Gestante</h1>
-        <p>Gerencie gestantes, exames e prescrições médicas de forma eficiente.</p>
-        <div class="navigation">
-            <router-link to="/gestantes" class="nav-card">👩‍🍼 Gestantes</router-link>
-            <router-link to="/exames" class="nav-card">🩺 Exames</router-link>
-            <router-link to="/prescricoes" class="nav-card">💊 Prescrições</router-link>
+    <div class="container mt-4">
+        <h2 class="mb-3">{{ isEditing ? "Editar Prescrição" : "Cadastrar Prescrição" }}</h2>
+        <div class="card">
+            <div class="card-body">
+                <form @submit.prevent="submitForm">
+                    <div class="mb-3">
+                        <label class="form-label">Gestante</label>
+                        <select class="form-select" v-model="prescricao.gestanteId" required>
+                            <option v-for="gestante in gestantes" :key="gestante.id" :value="gestante.id">
+                                {{ gestante.nome }}
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Medicamento</label>
+                        <input class="form-control" v-model="prescricao.medicamento" type="text" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Dosagem</label>
+                        <input class="form-control" v-model="prescricao.dosagem" type="text" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Instruções</label>
+                        <textarea class="form-control" v-model="prescricao.instrucoes" rows="3"></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">
+                        {{ isEditing ? "Atualizar" : "Salvar" }}
+                    </button>
+                </form>
+            </div>
         </div>
     </div>
 </template>
 
 <script>
+import prescricaoService from '../services/prescricaoService';
+import gestanteService from '../services/gestanteService';
+
 export default {
-    name: 'Home'
+    data() {
+        return {
+            prescricao: {
+                gestanteId: '',
+                medicamento: '',
+                dosagem: '',
+                instrucoes: ''
+            },
+            gestantes: [],
+            isEditing: false
+        };
+    },
+    async created() {
+        try {
+            await this.fetchGestantes();
+            const id = this.$route.params.id;
+            if (id) {
+                this.isEditing = true;
+                await this.fetchPrescricao(id);
+            }
+        } catch (error) {
+            console.error('Erro ao carregar os dados iniciais:', error);
+        }
+    },
+    methods: {
+        async fetchGestantes() {
+            try {
+                const response = await gestanteService.getAll();
+                this.gestantes = response.data;
+            } catch (error) {
+                console.error('Erro ao buscar gestantes:', error);
+            }
+        },
+        async fetchPrescricao(id) {
+            try {
+                const response = await prescricaoService.getById(id);
+                if (response.data) {
+                    this.prescricao = response.data;
+                } else {
+                    console.warn('Prescrição não encontrada.');
+                }
+            } catch (error) {
+                console.error('Erro ao buscar prescrição:', error);
+            }
+        },
+        async submitForm() {
+            try {
+                if (this.isEditing) {
+                    await prescricaoService.update(this.$route.params.id, this.prescricao);
+                    alert('Prescrição atualizada com sucesso!');
+                } else {
+                    await prescricaoService.create(this.prescricao);
+                    alert('Prescrição cadastrada com sucesso!');
+                }
+                this.$router.push('/prescricoes');
+            } catch (error) {
+                console.error('Erro ao salvar prescrição:', error);
+            }
+        }
+    }
 };
 </script>
-
-<style scoped>
-.home-container {
-    text-align: center;
-    padding: 50px;
-}
-
-h1 {
-    color: #007bff;
-}
-
-p {
-    font-size: 18px;
-    margin-bottom: 20px;
-}
-
-.navigation {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    margin-top: 30px;
-}
-
-.nav-card {
-    display: inline-block;
-    padding: 15px 30px;
-    border-radius: 8px;
-    text-decoration: none;
-    color: white;
-    font-size: 18px;
-    background-color: #007bff;
-    transition: background 0.3s;
-}
-
-.nav-card:hover {
-    background-color: #0056b3;
-}
-</style>

@@ -1,9 +1,11 @@
 <template>
-    <div class="list-container">
-        <h2>Lista de Gestantes</h2>
-        <button @click="$router.push('/gestantes/novo')">+ Nova Gestante</button>
-        <table>
-            <thead>
+    <div class="container mt-4">
+        <h2 class="mb-3">Lista de Gestantes</h2>
+        <button class="btn btn-primary mb-3" @click="$router.push('/gestantes/novo')">
+            + Nova Gestante
+        </button>
+        <table class="table table-bordered table-striped">
+            <thead class="table-primary">
                 <tr>
                     <th>Nome</th>
                     <th>Data de Nascimento</th>
@@ -19,8 +21,12 @@
                     <td>{{ gestante.cpf }}</td>
                     <td>{{ gestante.telefone }}</td>
                     <td>
-                        <button @click="editarGestante(gestante.id)">✏️ Editar</button>
-                        <button @click="excluirGestante(gestante.id)" class="delete">🗑 Excluir</button>
+                        <button class="btn btn-info btn-sm me-2 text-white" @click="editarGestante(gestante.id)">
+                            Editar
+                        </button>
+                        <button class="btn btn-danger btn-sm me-2 text-white" @click="excluirGestante(gestante.id)">
+                            Excluir
+                        </button>
                     </td>
                 </tr>
             </tbody>
@@ -42,65 +48,26 @@ export default {
     },
     methods: {
         async fetchGestantes() {
-            const response = await gestanteService.getAll();
-            this.gestantes = response.data;
+            try {
+                const response = await gestanteService.getAll();
+                this.gestantes = response.data;
+            } catch (error) {
+                console.error('Erro ao buscar gestantes:', error);
+            }
         },
         editarGestante(id) {
             this.$router.push(`/gestantes/${id}/editar`);
         },
         async excluirGestante(id) {
             if (confirm('Tem certeza que deseja excluir esta gestante?')) {
-                await gestanteService.delete(id);
-                this.fetchGestantes();
+                try {
+                    await gestanteService.delete(id);
+                    this.fetchGestantes();
+                } catch (error) {
+                    console.error('Erro ao excluir gestante:', error);
+                }
             }
         }
     }
 };
 </script>
-
-<style scoped>
-.list-container {
-    max-width: 800px;
-    margin: auto;
-    padding: 20px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    background-color: #f9f9f9;
-}
-
-button {
-    margin: 5px;
-    padding: 8px 12px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 14px;
-}
-
-button.delete {
-    background-color: #dc3545;
-    color: white;
-}
-
-button:hover {
-    opacity: 0.8;
-}
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
-}
-
-thead {
-    background-color: #007bff;
-    color: white;
-}
-
-th,
-td {
-    padding: 10px;
-    border: 1px solid #ccc;
-    text-align: left;
-}
-</style>

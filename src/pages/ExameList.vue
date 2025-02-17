@@ -1,9 +1,11 @@
 <template>
-    <div class="list-container">
-        <h2>Lista de Exames</h2>
-        <button @click="$router.push('/exames/novo')">+ Novo Exame</button>
-        <table>
-            <thead>
+    <div class="container mt-4">
+        <h2 class="mb-3">Lista de Exames</h2>
+        <button class="btn btn-primary mb-3" @click="$router.push('/exames/novo')">
+            <i class="bi bi-plus"></i> Novo Exame
+        </button>
+        <table class="table table-bordered table-striped">
+            <thead class="table-primary">
                 <tr>
                     <th>Gestante</th>
                     <th>Tipo</th>
@@ -14,13 +16,17 @@
             </thead>
             <tbody>
                 <tr v-for="exame in exames" :key="exame.id">
-                    <td>{{ exame.gestanteNome }}</td>
+                    <td>{{ exame.Gestante.nome }}</td>
                     <td>{{ exame.tipo }}</td>
                     <td>{{ exame.dataRealizacao }}</td>
                     <td>{{ exame.resultado }}</td>
                     <td>
-                        <button @click="editarExame(exame.id)">✏️ Editar</button>
-                        <button @click="excluirExame(exame.id)" class="delete">🗑 Excluir</button>
+                        <button class="btn btn-info btn-sm me-2 text-white" @click="editarExame(exame.id)">
+                            <i class="bi bi-pencil"></i> Editar
+                        </button>
+                        <button class="btn btn-danger btn-sm me-2 text-white" @click="excluirExame(exame.id)">
+                            <i class="bi bi-trash"></i> Excluir
+                        </button>
                     </td>
                 </tr>
             </tbody>
@@ -42,65 +48,26 @@ export default {
     },
     methods: {
         async fetchExames() {
-            const response = await exameService.getAll();
-            this.exames = response.data;
+            try {
+                const response = await exameService.getAll();
+                this.exames = response.data;
+            } catch (error) {
+                console.error('Erro ao buscar exames:', error);
+            }
         },
         editarExame(id) {
             this.$router.push(`/exames/${id}/editar`);
         },
         async excluirExame(id) {
             if (confirm('Tem certeza que deseja excluir este exame?')) {
-                await exameService.delete(id);
-                this.fetchExames();
+                try {
+                    await exameService.delete(id);
+                    this.fetchExames();
+                } catch (error) {
+                    console.error('Erro ao excluir exame:', error);
+                }
             }
         }
     }
 };
 </script>
-
-<style scoped>
-.list-container {
-    max-width: 800px;
-    margin: auto;
-    padding: 20px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    background-color: #f9f9f9;
-}
-
-button {
-    margin: 5px;
-    padding: 8px 12px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 14px;
-}
-
-button.delete {
-    background-color: #dc3545;
-    color: white;
-}
-
-button:hover {
-    opacity: 0.8;
-}
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
-}
-
-thead {
-    background-color: #007bff;
-    color: white;
-}
-
-th,
-td {
-    padding: 10px;
-    border: 1px solid #ccc;
-    text-align: left;
-}
-</style>

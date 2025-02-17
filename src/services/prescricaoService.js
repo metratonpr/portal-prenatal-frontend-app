@@ -2,18 +2,18 @@ import http from "./http";
 
 export default {
   getAll() {
-    return http.get("/gestantes");
+    return http.get("/prescricoes");
   },
   getById(id) {
-    return http.get(`/gestantes/${id}`);
+    return http.get(`/prescricoes/${id}`);
   },
   create(data) {
-    return http.post("/gestantes", data);
+    return http.post("/prescricoes", data);
   },
   update(id, data) {
-    return http.put(`/gestantes/${id}`, data);
+    return http.put(`/prescricoes/${id}`, data);
   },
   delete(id) {
-    return http.delete(`/gestantes/${id}`);
+    return http.delete(`/prescricoes/${id}`);
   },
 };
